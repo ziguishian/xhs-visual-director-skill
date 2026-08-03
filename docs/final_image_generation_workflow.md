@@ -68,6 +68,19 @@ generated/[topic-slug]/page-03.png
 - 图片尺寸。
 - 比例检查结果。
 
+## 可选 Atlas Cloud provider
+
+默认使用当前环境已有的图像生成工具。只有用户明确要求 Atlas Cloud，或设置
+`XHS_IMAGE_PROVIDER=atlas` 时，才使用 Skill 目录内的 `scripts/atlas-image.mjs`：
+
+1. 把统一视觉母版和本页提示词完整写入 UTF-8 prompt 文件。
+2. 先生成 1 张视觉确认图，用户确认后再逐页生成。
+3. 默认使用 `2592*3456` 的严格 3:4 竖版 PNG。
+4. 每页保留同名 `.prompt.txt`，用于复现和返工。
+5. 生成失败或下载结果不是 PNG 时立即停止，不进入下一页。
+
+Atlas Cloud 路径只做 prompt-matched 生成，不附加本地参考图。需要参考图约束时继续使用支持参考图输入的现有工具，不能假装已完成 image-reference 匹配。
+
 ## 中文文字策略
 
 如果图像模型生成中文容易乱码，优先生成：
