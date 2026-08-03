@@ -37,6 +37,7 @@ description: Use this skill when planning, redesigning, or reviewing Xiaohongshu
 - 需要生成图像提示词时，读取 `templates/image_prompt_template.md` 和 `docs/prompt_rules.md`。
 - 需要审查页面高级感和可读性时，读取 `templates/visual_review_checklist.md` 和 `docs/anti_patterns.md`。
 - 需要快速套用完整输出格式时，读取 `templates/xhs_carousel_plan_template.md`。
+- 只有用户明确选择 Atlas Cloud provider 时，才使用本 Skill 内的 `scripts/atlas-image.mjs` 执行图像生成；默认图像生成工具保持不变。
 - 需要生成多页图文或多张图片时，必须先读取 `docs/visual_consistency_protocol.md`，并为整套图文生成“统一视觉母版”。
 - 用户要求“生成图文”“开始生成”“做成小红书图片”时，默认最终交付物是图片文件，不是仅输出模板或提示词；必须先生成 1 张视觉确认图，确认后再批量生成最终图。
 - 用户要求完整图文规划、生成多页图文、生成小红书图片或做视觉导演时，必须先读取 `docs/socratic_questioning_protocol.md`，并默认先问 10 个苏格拉底式澄清问题；用户明确说“不要提问，直接生成”时才可跳过。
@@ -352,6 +353,7 @@ description: Use this skill when planning, redesigning, or reviewing Xiaohongshu
 - 本图验证了哪些视觉规则。
 - 需要用户确认的 3-5 个点。
 - 如果用户说“确认”“通过”“可以”“继续”，进入 Step 7。
+- 若用户明确选择 Atlas Cloud，先把完整确认图提示词保存为 UTF-8 文本，再用本 Skill 内的 `scripts/atlas-image.mjs` 生成 1 张 PNG。Atlas Cloud 路径不附加本地参考图，必须把母版锁定前缀和可复用视觉特征完整写进提示词，并如实说明这是 prompt-matched。
 
 ### Step 7：生成每一页最终图片
 
@@ -379,6 +381,28 @@ description: Use this skill when planning, redesigning, or reviewing Xiaohongshu
 - 最终图片路径
 - 图片比例检查结果
 - 是否需要后期叠加中文
+
+若用户明确选择 Atlas Cloud，在确认图通过后才逐页执行本 Skill 内的 `scripts/atlas-image.mjs`。每页使用独立 prompt 文件和输出路径，默认保存为 `generated/[topic-slug]/page-XX.png`；任何一页失败时停止批量生成，不得把提示词当作最终图片交付。
+
+### Atlas Cloud 可选执行器
+
+默认流程不绑定 provider。仅当用户明确要求 Atlas Cloud，或设置 `XHS_IMAGE_PROVIDER=atlas` 时启用：
+
+```bash
+export XHS_IMAGE_PROVIDER=atlas
+export ATLASCLOUD_API_KEY="your-key"
+
+node /absolute/path/to/xhs-visual-director-skill/skill/scripts/atlas-image.mjs \
+  --prompt-file ./prompts/page-01.txt \
+  --output ./generated/topic/page-01.png
+```
+
+- 默认 Media API base URL：`https://api.atlascloud.ai/api/v1`
+- 默认模型：`bytedance/seedream-v5.0-lite`
+- 默认尺寸：`2592*3456`，严格 3:4 竖版；可用 `--size` 显式覆盖
+- 可用 `ATLASCLOUD_IMAGE_MODEL` 或 `--model` 显式覆盖模型
+- 脚本异步提交并轮询任务，下载后校验 PNG 签名，并把精确提示词写到同名 `.prompt.txt`
+- API key 只从环境读取；不得写入提示词、图片目录或项目文件
 
 生成规则：
 
