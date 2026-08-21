@@ -225,4 +225,4 @@ Skill 不会立刻生成完整方案，而是先问 10 个问题，帮助明确�
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ziguishian/xhs-visual-director-skill&type=Date)](https://www.star-history.com/#ziguishian/xhs-visual-director-skill&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=ziguishian/xhs-visual-director-skill&type=Date)](https://star-history.dera.page/#ziguishian/xhs-visual-director-skill&Date)
